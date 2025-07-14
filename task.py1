@@ -1,0 +1,41 @@
+import requests
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import plotly.express as px
+
+# 1. Fetch
+url = "https://disease.sh/v3/covid-19/historical/India?lastdays=30"
+resp = requests.get(url); resp.raise_for_status()
+data = resp.json()
+cases = data['timeline']['cases']
+df = pd.DataFrame({
+    "date": pd.to_datetime(list(cases.keys()), format="%m/%d/%y"),
+    "cases": list(cases.values())
+}).sort_values("date")
+
+# 2. Matplotlib
+plt.figure(figsize=(10,4))
+plt.plot(df['date'], df['cases'], marker='o')
+plt.title("Matplotlib: COVID‑19 Cases in India")
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.savefig("matplotlib_plot.png")
+plt.close()
+
+# 3. Seaborn
+sns.set_style("whitegrid")
+plt.figure(figsize=(10,4))
+sns.lineplot(x='date', y='cases', data=df, marker="o", color="teal")
+plt.title("Seaborn: COVID‑19 Cases in India")
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.savefig("seaborn_plot.png")
+plt.close()
+
+# 4. Plotly
+fig = px.line(df, x='date', y='cases',
+              title="Plotly: COVID‑19 Cases in India",
+              labels={'cases': 'Cumulative Cases'})
+fig.update_xaxes(rangeslider_visible=True)
+fig.write_html("plotly_plot.html")
